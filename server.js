@@ -176,7 +176,7 @@ var server = http.createServer(function(req, res) {
 });
 
 server = require("http-shutdown")(server);
-
+server.on('connection', function (socket) {socket.unref();});
 server.listen(port, "0.0.0.0", function() {
 	console.log("listening on " + port + "...");
 });
