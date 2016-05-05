@@ -1,34 +1,5 @@
 var querystring = require('querystring');
-var mongoose = require('mongoose');
-var db = mongoose.connection;
-var Echo = mongoose.model('Echo', {
-	ip: String,
-	domain: String,
-	method: String,
-	url: String,
-	body: String,
-	host: String,
-	userAgent: String,
-	referer: String
-});
-var connecting = false;
-var disabled = false;
-
-function init() {
-	var uri = process.env.MONGOLAB_URI;
-	if (!uri) {
-		disabled = true;
-		return;
-	}
-	db.on('error', function(err) {
-		console.error('mongo error %s', err);
-	});
-	db.once('open', function() {
-		console.log('Connected to Mongolab');
-	});
-	mongoose.connect(uri);
-	connecting = true;
-}
+var disabled = true;
 
 function msg2doc(msg) {
 	//force domains to be a string
@@ -46,7 +17,6 @@ function msg2doc(msg) {
 	};
 }
 exports.process = function(msg) {
-	if (!connecting) init();
 	if (disabled) return;
 	//dont insert load tests
 	if (/^load-tester/.test(msg.headers["user-agent"])) return;
