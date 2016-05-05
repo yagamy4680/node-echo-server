@@ -66,7 +66,7 @@ var getProxy = function(xdomain, res) {
 	res.end('<!DOCTYPE HTML>\n' + '<script src="' + (xdomain || '//rawgit.com/jpillora/xdomain/gh-pages/dist/0.6/xdomain.js') + '" master="*"></script>');
 };
 //create the server!
-http.createServer(function(req, res) {
+var server = http.createServer(function(req, res) {
 	//special actions
 	if (req.url === '/favicon.ico') {
 		return res.end();
@@ -173,6 +173,19 @@ http.createServer(function(req, res) {
 		req.ended = true;
 		send();
 	});
-}).listen(port, "0.0.0.0", function() {
+});
+
+server = require("http-shutdown")(server);
+
+server.listen(port, "0.0.0.0", function() {
 	console.log("listening on " + port + "...");
+});
+
+process.on("message", function (msg) {
+	if (msg === 'shutdown') {
+		server.shutdown(function() {
+  			console.log('Server was shut down.');
+  			process.exit(0);
+		});
+	}
 });
