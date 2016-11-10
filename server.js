@@ -1,5 +1,7 @@
 var pkg = require("./package.json");
 var metrics = require("./metrics");
+var colors = require('colors');
+var prettyjson = require('prettyjson');
 var http = require("http");
 var dns = require("dns");
 var port = process.env.PORT || parseInt(process.argv[2], 10) || 4000;
@@ -7,6 +9,27 @@ var echoes = [];
 var total = 0;
 var live = 0;
 var up = new Date().toUTCString();
+
+var dumpJson = function(config, text){
+  var xs, i$, len$, x;
+  if (prettyjson == null) {
+  	return;
+  }
+  text = prettyjson.render(config, {
+    keysColor: 'gray',
+    dashColor: 'green',
+    stringColor: 'yellow',
+    numberColor: 'cyan',
+    defaultIndentation: 4
+  });
+  xs = text.split('\n');
+  for (i$ = 0, len$ = xs.length; i$ < len$; ++i$) {
+    x = xs[i$];
+    console.error("\t" + x);
+  }
+  return console.error("");
+};
+
 //replay a single echo
 var getEcho = function(id, res) {
 	res.writeHead(200, {
@@ -134,8 +157,14 @@ var server = http.createServer(function(req, res) {
 		if (data.domains === null || !req.ended) return;
 		//process (if able)
 		metrics.process(data);
+		var type = data['headers']['content-type'];
+		if (type == 'application/json') {
+			data['body'] = JSON.parse(data['body']);
+		}
 		var buff = new Buffer(JSON.stringify(data, null, 2));
 		var length = buff.length;
+		console.log(data['url'].magenta);
+		dumpJson(data);
 		headers['content-length'] = length;
 		//write header
 		res.writeHead(status, headers);
