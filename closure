@@ -3,6 +3,11 @@
 function pack {
 cat <<__EOF__ > $2
 #!/usr/bin/env node
+/**
+ * BUILT_AT: $(date '+%Y/%m/%d %H:%M:%S')
+ * BUILT_BY: $(whoami)
+ * FROM: $(git config --get remote.origin.url) 
+ */
 $(cat $1)
 __EOF__
 chmod +x $2
@@ -21,9 +26,6 @@ function compile {
 	pack ${TMP2} ${DST}
 	rm -f ${TMP1}
 	rm -f ${TMP2}
-	# browserify --node --extension=ls -t browserify-livescript --outfile ${TMP1} --full-paths ${SRC}
-	# discify ${TMP1} > /tmp/aa.html
-	# rm -f ${TMP1}
 }
 
 [ "" == "$(which browserify)" ] && echo "please install browserify first" && exit 1
